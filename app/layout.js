@@ -21,6 +21,7 @@ export default function RootLayout({ children }) {
       > {/* header */}
       <Header/>
           <main className="min-h-screen">{children}</main>
+          <Toaster richColors />
           {/* footer */
         <footer className="bg-blue-50 py-12">   {/* vertical padding 12  */}
         <div className="container mx-au to px-4 text-center text-gray-600">

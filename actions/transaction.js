@@ -238,24 +238,19 @@ export async function scanReceipt(file) {
     const base64String = Buffer.from(arrayBuffer).toString("base64");
 
     const prompt = `
-      Analyze this receipt image and extract the following information in JSON format:
-      - Total amount (just the number)
-      - Date (in ISO format)
-      - Description or items purchased (brief summary)
-      - Merchant/store name
-      - Suggested category (one of: housing,transportation,groceries,utilities,entertainment,food,shopping,healthcare,education,personal,travel,insurance,gifts,bills,other-expense )
-      
-      Only respond with valid JSON in this exact format:
-      {
-        "amount": number,
-        "date": "ISO date string",
-        "description": "string",
-        "merchantName": "string",
-        "category": "string"
-      }
+You are an intelligent receipt scanning assistant. Given an image of a receipt, extract the following information and return ONLY valid JSON. Do not add explanations or extra formatting.
 
-      If its not a recipt, return an empty object
-    `;
+Format:
+{
+  "amount": number (e.g., 23.5),
+  "date": "ISO date string" (e.g., "2024-04-01T00:00:00.000Z"),
+  "description": "brief summary of items",
+  "merchantName": "store name",
+  "category": "one of: housing, transportation, groceries, utilities, entertainment, food, shopping, healthcare, education, personal, travel, insurance, gifts, bills, other-expense"
+}
+
+If the image is not a receipt, return {}.
+`;
 
     const result = await model.generateContent([
       {

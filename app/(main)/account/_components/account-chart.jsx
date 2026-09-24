@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Available date range filters
 const DATE_RANGES = {
   "7D": { label: "Last 7 Days", days: 7 },
   "1M": { label: "Last Month", days: 30 },
@@ -29,22 +30,25 @@ const DATE_RANGES = {
   ALL: { label: "All Time", days: null },
 };
 
+// Main chart component for account transactions
 export function AccountChart({ transactions }) {
-  const [dateRange, setDateRange] = useState("1M");
+  const [dateRange, setDateRange] = useState("1M"); // default to 1 month
 
+  // Filter and group transaction data based on selected range
   const filteredData = useMemo(() => {
     const range = DATE_RANGES[dateRange];
     const now = new Date();
+
     const startDate = range.days
       ? startOfDay(subDays(now, range.days))
-      : startOfDay(new Date(0));
+      : startOfDay(new Date(0)); // All time fallback
 
-    // Filter transactions within date range
+    // Filter transactions by selected date range
     const filtered = transactions.filter(
       (t) => new Date(t.date) >= startDate && new Date(t.date) <= endOfDay(now)
     );
 
-    // Group transactions by date
+    // Group transactions by date and aggregate income and expense
     const grouped = filtered.reduce((acc, transaction) => {
       const date = format(new Date(transaction.date), "MMM dd");
       if (!acc[date]) {
@@ -58,13 +62,13 @@ export function AccountChart({ transactions }) {
       return acc;
     }, {});
 
-    // Convert to array and sort by date
+    // Return as sorted array
     return Object.values(grouped).sort(
       (a, b) => new Date(a.date) - new Date(b.date)
     );
   }, [transactions, dateRange]);
 
-  // Calculate totals for the selected period
+  // Compute total income and expenses
   const totals = useMemo(() => {
     return filteredData.reduce(
       (acc, day) => ({
@@ -81,6 +85,7 @@ export function AccountChart({ transactions }) {
         <CardTitle className="text-base font-normal">
           Transaction Overview
         </CardTitle>
+        {/* Dropdown to change date range */}
         <Select defaultValue={dateRange} onValueChange={setDateRange}>
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Select range" />
@@ -94,7 +99,9 @@ export function AccountChart({ transactions }) {
           </SelectContent>
         </Select>
       </CardHeader>
+
       <CardContent>
+        {/* Summary income/expense/net section */}
         <div className="flex justify-around mb-6 text-sm">
           <div className="text-center">
             <p className="text-muted-foreground">Total Income</p>
@@ -121,6 +128,8 @@ export function AccountChart({ transactions }) {
             </p>
           </div>
         </div>
+
+        {/* Bar Chart visualization */}
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -149,6 +158,7 @@ export function AccountChart({ transactions }) {
                 }}
               />
               <Legend />
+              {/* Bars for Income and Expense */}
               <Bar
                 dataKey="income"
                 name="Income"
@@ -168,3 +178,15 @@ export function AccountChart({ transactions }) {
     </Card>
   );
 }
+
+/*
+NOTES:
+
+- This component renders a dynamic bar chart of income and expense trends using recharts.
+- It allows users to filter data by selectable time ranges: 7D, 1M, 3M, 6M, or All.
+- Transactions are filtered and grouped by day for visual clarity.
+- Totals for income, expenses, and net balance are shown above the chart.
+- Useful for users to quickly understand spending vs income trends for a specific account.
+
+A responsive, clean financial insight component essential for personal finance dashboards.
+*/

@@ -1,10 +1,11 @@
-"use client";
+"use client"; // Marks this file as a client-side component
 
-import { useState, useEffect } from "react";
-import { Pencil, Check, X } from "lucide-react";
-import useFetch from "@/hooks/use-fetch";
-import { toast } from "sonner";
+import { useState, useEffect } from "react"; // React hooks
+import { Pencil, Check, X } from "lucide-react"; // Icons for edit actions
+import useFetch from "@/hooks/use-fetch"; // Custom hook for async operations
+import { toast } from "sonner"; // Toast notifications
 
+// UI components
 import {
   Card,
   CardContent,
@@ -12,17 +13,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { updateBudget } from "@/actions/budget";
+import { Progress } from "@/components/ui/progress"; // Progress bar
+import { Button } from "@/components/ui/button"; // Reusable button
+import { Input } from "@/components/ui/input"; // Styled input field
+import { updateBudget } from "@/actions/budget"; // API call to update budget
 
+// Main component for showing and updating budget
 export function BudgetProgress({ initialBudget, currentExpenses }) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // Controls edit mode
   const [newBudget, setNewBudget] = useState(
     initialBudget?.amount?.toString() || ""
-  );
+  ); // Budget input value state
 
+  // Destructure fetch state from custom hook
   const {
     loading: isLoading,
     fn: updateBudgetFn,
@@ -30,10 +33,12 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
     error,
   } = useFetch(updateBudget);
 
+  // Calculate budget usage in percentage
   const percentUsed = initialBudget
     ? (currentExpenses / initialBudget.amount) * 100
     : 0;
 
+  // Handles budget update logic
   const handleUpdateBudget = async () => {
     const amount = parseFloat(newBudget);
 
@@ -42,14 +47,16 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
       return;
     }
 
-    await updateBudgetFn(amount);
+    await updateBudgetFn(amount); // Trigger API call
   };
 
+  // Reset to original and exit edit mode
   const handleCancel = () => {
     setNewBudget(initialBudget?.amount?.toString() || "");
     setIsEditing(false);
   };
 
+  // Show success toast and exit edit mode if update successful
   useEffect(() => {
     if (updatedBudget?.success) {
       setIsEditing(false);
@@ -57,6 +64,7 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
     }
   }, [updatedBudget]);
 
+  // Show error toast on failure
   useEffect(() => {
     if (error) {
       toast.error(error.message || "Failed to update budget");
@@ -72,6 +80,7 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
           </CardTitle>
           <div className="flex items-center gap-2 mt-1">
             {isEditing ? (
+              // Render editable input if in edit mode
               <div className="flex items-center gap-2">
                 <Input
                   type="number"
@@ -100,6 +109,7 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
                 </Button>
               </div>
             ) : (
+              // Render static view and pencil icon when not editing
               <>
                 <CardDescription>
                   {initialBudget
@@ -121,18 +131,18 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
           </div>
         </div>
       </CardHeader>
+
       <CardContent>
         {initialBudget && (
           <div className="space-y-2">
             <Progress
-              value={percentUsed}
+              value={percentUsed} // Percentage for progress bar
               extraStyles={`${
-                // add to Progress component
                 percentUsed >= 90
-                  ? "bg-red-500"
+                  ? "bg-red-500" // Alert color
                   : percentUsed >= 75
-                    ? "bg-yellow-500"
-                    : "bg-green-500"
+                  ? "bg-yellow-500" // Warning color
+                  : "bg-green-500" // Normal color
               }`}
             />
             <p className="text-xs text-muted-foreground text-right">
@@ -144,3 +154,15 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
     </Card>
   );
 }
+
+/*
+NOTES:
+
+- `BudgetProgress` displays the current spending against a monthly budget.
+- Allows users to edit the budget amount directly from the UI.
+- Uses `useFetch` for async API call to update the budget in the database.
+- Handles validation for non-numeric/invalid budget inputs.
+- Visual feedback includes toast notifications for success/error and a progress bar.
+- Progress bar color dynamically reflects budget usage (green, yellow, red).
+- Keeps UI responsive and user-friendly with real-time feedback and smooth transitions.
+*/

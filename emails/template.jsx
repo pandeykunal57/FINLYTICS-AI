@@ -7,9 +7,9 @@ import {
   Preview,
   Section,
   Text,
-} from "@react-email/components";
+} from "@react-email/components";  // Import React Email UI components
 
-// Dummy data for preview
+// Sample data for preview/testing
 const PREVIEW_DATA = {
   monthlyReport: {
     userName: "John Doe",
@@ -45,11 +45,13 @@ const PREVIEW_DATA = {
   },
 };
 
+// Email template component accepting userName, type, and data props
 export default function EmailTemplate({
   userName = "",
   type = "monthly-report",
   data = {},
 }) {
+  // Render Monthly Financial Report email
   if (type === "monthly-report") {
     return (
       <Html>
@@ -64,7 +66,7 @@ export default function EmailTemplate({
               Here&rsquo;s your financial summary for {data?.month}:
             </Text>
 
-            {/* Main Stats */}
+            {/* Display main financial stats */}
             <Section style={styles.statsContainer}>
               <div style={styles.stat}>
                 <Text style={styles.text}>Total Income</Text>
@@ -82,7 +84,7 @@ export default function EmailTemplate({
               </div>
             </Section>
 
-            {/* Category Breakdown */}
+            {/* Show expense breakdown by category */}
             {data?.stats?.byCategory && (
               <Section style={styles.section}>
                 <Heading style={styles.heading}>Expenses by Category</Heading>
@@ -97,7 +99,7 @@ export default function EmailTemplate({
               </Section>
             )}
 
-            {/* AI Insights */}
+            {/* Display AI-generated financial insights */}
             {data?.insights && (
               <Section style={styles.section}>
                 <Heading style={styles.heading}>Finlytics AI Insights</Heading>
@@ -119,6 +121,7 @@ export default function EmailTemplate({
     );
   }
 
+  // Render Budget Alert email
   if (type === "budget-alert") {
     return (
       <Html>
@@ -155,6 +158,7 @@ export default function EmailTemplate({
   }
 }
 
+// Styles object for consistent email formatting
 const styles = {
   body: {
     backgroundColor: "#f6f9fc",
@@ -220,3 +224,16 @@ const styles = {
     borderTop: "1px solid #e5e7eb",
   },
 };
+
+
+// This file defines an email template component that dynamically renders either a monthly financial report or a budget alert based on the "type" prop.
+
+// It uses React Email components to build styled, responsive emails.
+
+// Monthly reports include summaries, expense breakdowns by category, and AI-generated financial insights.
+
+// Budget alerts notify users when their spending approaches or exceeds budget limits.
+
+// Styles are defined inline in a centralized "styles" object for consistency.
+
+// The template is designed for clear, professional communication with end users about their financial status.

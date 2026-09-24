@@ -1,6 +1,6 @@
-"use client";
+"use client"; // Indicates the file uses client-side rendering
 
-import { useState } from "react";
+import { useState } from "react"; // React hook for state
 import {
   PieChart,
   Pie,
@@ -8,10 +8,11 @@ import {
   ResponsiveContainer,
   Tooltip,
   Legend,
-} from "recharts";
-import { format } from "date-fns";
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+} from "recharts"; // Charting library
+import { format } from "date-fns"; // Utility for formatting dates
+import { ArrowUpRight, ArrowDownRight } from "lucide-react"; // Icons
 
+// UI components
 import {
   Select,
   SelectContent,
@@ -20,8 +21,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"; // Class name utility
 
+// Color palette for pie chart slices
 const COLORS = [
   "#FF6B6B",
   "#4ECDC4",
@@ -32,22 +34,23 @@ const COLORS = [
   "#9FA8DA",
 ];
 
+// DashboardOverview component receives account and transaction data
 export function DashboardOverview({ accounts, transactions }) {
   const [selectedAccountId, setSelectedAccountId] = useState(
     accounts.find((a) => a.isDefault)?.id || accounts[0]?.id
-  );
+  ); // Sets default account or fallback to first
 
-  // Filter transactions for selected account
+  // Filter all transactions for selected account
   const accountTransactions = transactions.filter(
     (t) => t.accountId === selectedAccountId
   );
 
-  // Get recent transactions (last 5)
+  // Sort by date and pick the 5 most recent
   const recentTransactions = accountTransactions
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 5);
 
-  // Calculate expense breakdown for current month
+  // Get expenses for the current month
   const currentDate = new Date();
   const currentMonthExpenses = accountTransactions.filter((t) => {
     const transactionDate = new Date(t.date);
@@ -58,7 +61,7 @@ export function DashboardOverview({ accounts, transactions }) {
     );
   });
 
-  // Group expenses by category
+  // Group monthly expenses by category
   const expensesByCategory = currentMonthExpenses.reduce((acc, transaction) => {
     const category = transaction.category;
     if (!acc[category]) {
@@ -68,7 +71,7 @@ export function DashboardOverview({ accounts, transactions }) {
     return acc;
   }, {});
 
-  // Format data for pie chart
+  // Convert grouped category data to array for chart input
   const pieChartData = Object.entries(expensesByCategory).map(
     ([category, amount]) => ({
       name: category,
@@ -78,12 +81,13 @@ export function DashboardOverview({ accounts, transactions }) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {/* Recent Transactions Card */}
+      {/* Card: Recent Transactions */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="text-base font-normal">
             Recent Transactions
           </CardTitle>
+          {/* Account Selector */}
           <Select
             value={selectedAccountId}
             onValueChange={setSelectedAccountId}
@@ -102,11 +106,13 @@ export function DashboardOverview({ accounts, transactions }) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {/* Show message if no transactions exist */}
             {recentTransactions.length === 0 ? (
               <p className="text-center text-muted-foreground py-4">
                 No recent transactions
               </p>
             ) : (
+              // Render each recent transaction
               recentTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
@@ -144,7 +150,7 @@ export function DashboardOverview({ accounts, transactions }) {
         </CardContent>
       </Card>
 
-      {/* Expense Breakdown Card */}
+      {/* Card: Monthly Expense Breakdown */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base font-normal">
@@ -152,11 +158,13 @@ export function DashboardOverview({ accounts, transactions }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0 pb-5">
+          {/* Show message if no expenses found */}
           {pieChartData.length === 0 ? (
             <p className="text-center text-muted-foreground py-4">
               No expenses this month
             </p>
           ) : (
+            // Render Pie Chart
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -194,3 +202,18 @@ export function DashboardOverview({ accounts, transactions }) {
     </div>
   );
 }
+
+/*
+NOTES:
+
+- `DashboardOverview` displays:
+  - A dropdown to choose between user accounts.
+  - A card showing the last 5 transactions of the selected account.
+  - A pie chart visualizing expenses by category for the current month.
+
+- Transactions are filtered and grouped by account and category in real time.
+- Recharts library is used for pie chart rendering with responsive container.
+- Uses functional components and state for interactivity and data reactivity.
+
+- Enhances UX with clear visuals and selection control to view data per account.
+*/

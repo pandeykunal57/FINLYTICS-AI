@@ -53,6 +53,7 @@ import useFetch from "@/hooks/use-fetch";
 import { BarLoader } from "react-spinners";
 import { useRouter } from "next/navigation";
 
+// Human-readable recurring intervals
 const RECURRING_INTERVALS = {
   DAILY: "Daily",
   WEEKLY: "Weekly",
@@ -61,42 +62,37 @@ const RECURRING_INTERVALS = {
 };
 
 export function NoPaginationTransactionTable({ transactions }) {
-  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]); // Track selected transaction IDs
   const [sortConfig, setSortConfig] = useState({
     field: "date",
     direction: "desc",
-  });
-  const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
-  const [recurringFilter, setRecurringFilter] = useState("");
+  }); // Default sorting: date descending
+  const [searchTerm, setSearchTerm] = useState(""); // Search by description
+  const [typeFilter, setTypeFilter] = useState(""); // Filter by income/expense
+  const [recurringFilter, setRecurringFilter] = useState(""); // Filter by recurring
   const router = useRouter();
 
-  // Memoized filtered and sorted transactions
+  // Apply filters + sorting to transactions
   const filteredAndSortedTransactions = useMemo(() => {
     let result = [...transactions];
 
-    // Apply search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
-      result = result.filter((transaction) =>
-        transaction.description?.toLowerCase().includes(searchLower)
+      result = result.filter((t) =>
+        t.description?.toLowerCase().includes(searchLower)
       );
     }
 
-    // Apply type filter
     if (typeFilter) {
-      result = result.filter((transaction) => transaction.type === typeFilter);
+      result = result.filter((t) => t.type === typeFilter);
     }
 
-    // Apply recurring filter
     if (recurringFilter) {
-      result = result.filter((transaction) => {
-        if (recurringFilter === "recurring") return transaction.isRecurring;
-        return !transaction.isRecurring;
-      });
+      result = result.filter((t) =>
+        recurringFilter === "recurring" ? t.isRecurring : !t.isRecurring
+      );
     }
 
-    // Apply sorting
     result.sort((a, b) => {
       let comparison = 0;
 
@@ -110,8 +106,6 @@ export function NoPaginationTransactionTable({ transactions }) {
         case "category":
           comparison = a.category.localeCompare(b.category);
           break;
-        default:
-          comparison = 0;
       }
 
       return sortConfig.direction === "asc" ? comparison : -comparison;
@@ -120,6 +114,7 @@ export function NoPaginationTransactionTable({ transactions }) {
     return result;
   }, [transactions, searchTerm, typeFilter, recurringFilter, sortConfig]);
 
+  // Sort toggle
   const handleSort = (field) => {
     setSortConfig((current) => ({
       field,
@@ -128,6 +123,7 @@ export function NoPaginationTransactionTable({ transactions }) {
     }));
   };
 
+  // Select single row
   const handleSelect = (id) => {
     setSelectedIds((current) =>
       current.includes(id)
@@ -136,6 +132,7 @@ export function NoPaginationTransactionTable({ transactions }) {
     );
   };
 
+  // Select/deselect all
   const handleSelectAll = () => {
     setSelectedIds((current) =>
       current.length === filteredAndSortedTransactions.length
@@ -144,6 +141,7 @@ export function NoPaginationTransactionTable({ transactions }) {
     );
   };
 
+  // Bulk delete hook
   const {
     loading: deleteLoading,
     fn: deleteFn,
@@ -179,8 +177,10 @@ export function NoPaginationTransactionTable({ transactions }) {
       {deleteLoading && (
         <BarLoader className="mt-4" width={"100%"} color="#9333ea" />
       )}
-      {/* Filters */}
+
+      {/* FILTERS */}
       <div className="flex flex-col sm:flex-row gap-4">
+        {/* Search input */}
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -190,6 +190,8 @@ export function NoPaginationTransactionTable({ transactions }) {
             className="pl-8"
           />
         </div>
+
+        {/* Type and Recurring Filters */}
         <div className="flex gap-2">
           <Select value={typeFilter} onValueChange={setTypeFilter}>
             <SelectTrigger>
@@ -201,12 +203,7 @@ export function NoPaginationTransactionTable({ transactions }) {
             </SelectContent>
           </Select>
 
-          <Select
-            value={recurringFilter}
-            onValueChange={(value) => {
-              setRecurringFilter(value);
-            }}
-          >
+          <Select value={recurringFilter} onValueChange={setRecurringFilter}>
             <SelectTrigger className="w-[130px]">
               <SelectValue placeholder="All Transactions" />
             </SelectTrigger>
@@ -216,38 +213,33 @@ export function NoPaginationTransactionTable({ transactions }) {
             </SelectContent>
           </Select>
 
-          {/* Bulk Actions */}
+          {/* Delete Button */}
           {selectedIds.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBulkDelete}
-              >
-                <Trash className="h-4 w-4 mr-2" />
-                Delete Selected ({selectedIds.length})
-              </Button>
-            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Delete Selected ({selectedIds.length})
+            </Button>
           )}
 
+          {/* Clear Filters */}
           {(searchTerm || typeFilter || recurringFilter) && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleClearFilters}
-              title="Clear filters"
-            >
+            <Button variant="outline" size="icon" onClick={handleClearFilters}>
               <X className="h-4 w-5" />
             </Button>
           )}
         </div>
       </div>
 
-      {/* Transactions Table */}
+      {/* TRANSACTIONS TABLE */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
+              {/* Select All Checkbox */}
               <TableHead className="w-[50px]">
                 <Checkbox
                   checked={
@@ -258,10 +250,9 @@ export function NoPaginationTransactionTable({ transactions }) {
                   onCheckedChange={handleSelectAll}
                 />
               </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("date")}
-              >
+
+              {/* Table Headers with Sort */}
+              <TableHead className="cursor-pointer" onClick={() => handleSort("date")}>
                 <div className="flex items-center">
                   Date
                   {sortConfig.field === "date" &&
@@ -272,11 +263,10 @@ export function NoPaginationTransactionTable({ transactions }) {
                     ))}
                 </div>
               </TableHead>
+
               <TableHead>Description</TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("category")}
-              >
+
+              <TableHead className="cursor-pointer" onClick={() => handleSort("category")}>
                 <div className="flex items-center">
                   Category
                   {sortConfig.field === "category" &&
@@ -287,10 +277,8 @@ export function NoPaginationTransactionTable({ transactions }) {
                     ))}
                 </div>
               </TableHead>
-              <TableHead
-                className="cursor-pointer text-right"
-                onClick={() => handleSort("amount")}
-              >
+
+              <TableHead className="cursor-pointer text-right" onClick={() => handleSort("amount")}>
                 <div className="flex items-center justify-end">
                   Amount
                   {sortConfig.field === "amount" &&
@@ -301,43 +289,44 @@ export function NoPaginationTransactionTable({ transactions }) {
                     ))}
                 </div>
               </TableHead>
+
               <TableHead>Recurring</TableHead>
               <TableHead className="w-[50px]" />
             </TableRow>
           </TableHeader>
+
+          {/* Table Body */}
           <TableBody>
             {filteredAndSortedTransactions.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-center text-muted-foreground"
-                >
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
                   No transactions found
                 </TableCell>
               </TableRow>
             ) : (
               filteredAndSortedTransactions.map((transaction) => (
                 <TableRow key={transaction.id}>
+                  {/* Select row */}
                   <TableCell>
                     <Checkbox
                       checked={selectedIds.includes(transaction.id)}
                       onCheckedChange={() => handleSelect(transaction.id)}
                     />
                   </TableCell>
-                  <TableCell>
-                    {format(new Date(transaction.date), "PP")}
-                  </TableCell>
+
+                  {/* Transaction fields */}
+                  <TableCell>{format(new Date(transaction.date), "PP")}</TableCell>
                   <TableCell>{transaction.description}</TableCell>
                   <TableCell className="capitalize">
                     <span
-                      style={{
-                        background: categoryColors[transaction.category],
-                      }}
+                      style={{ background: categoryColors[transaction.category] }}
                       className="px-2 py-1 rounded text-white text-sm"
                     >
                       {transaction.category}
                     </span>
                   </TableCell>
+
+                  {/* Amount styled by type */}
                   <TableCell
                     className={cn(
                       "text-right font-medium",
@@ -349,6 +338,8 @@ export function NoPaginationTransactionTable({ transactions }) {
                     {transaction.type === "EXPENSE" ? "-" : "+"}Rs.
                     {transaction.amount.toFixed(2)}
                   </TableCell>
+
+                  {/* Recurring Badge */}
                   <TableCell>
                     {transaction.isRecurring ? (
                       <TooltipProvider>
@@ -359,21 +350,14 @@ export function NoPaginationTransactionTable({ transactions }) {
                               className="gap-1 bg-purple-100 text-purple-700 hover:bg-purple-200"
                             >
                               <RefreshCw className="h-3 w-3" />
-                              {
-                                RECURRING_INTERVALS[
-                                  transaction.recurringInterval
-                                ]
-                              }
+                              {RECURRING_INTERVALS[transaction.recurringInterval]}
                             </Badge>
                           </TooltipTrigger>
                           <TooltipContent>
                             <div className="text-sm">
                               <div className="font-medium">Next Date:</div>
                               <div>
-                                {format(
-                                  new Date(transaction.nextRecurringDate),
-                                  "PPP"
-                                )}
+                                {format(new Date(transaction.nextRecurringDate), "PPP")}
                               </div>
                             </div>
                           </TooltipContent>
@@ -386,6 +370,8 @@ export function NoPaginationTransactionTable({ transactions }) {
                       </Badge>
                     )}
                   </TableCell>
+
+                  {/* Action Menu */}
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -396,9 +382,7 @@ export function NoPaginationTransactionTable({ transactions }) {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           onClick={() =>
-                            router.push(
-                              `/transaction/create?edit=${transaction.id}`
-                            )
+                            router.push(`/transaction/create?edit=${transaction.id}`)
                           }
                         >
                           Edit
@@ -422,3 +406,15 @@ export function NoPaginationTransactionTable({ transactions }) {
     </div>
   );
 }
+
+/*
+NOTES:
+
+- This component renders a searchable, filterable, sortable transaction table with bulk selection and delete support.
+- Users can filter by transaction type and recurrence, and sort by date, amount, or category.
+- Built-in tooltips and badges enhance user experience for recurring transactions.
+- Batch deletion is integrated with confirmation and toast feedback.
+- Uses Lucide icons, Recharts, date-fns, and ShadCN UI components for styling and behavior.
+
+Great for visually managing financial transactions on a responsive dashboard.
+*/

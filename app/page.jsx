@@ -1,31 +1,47 @@
+// Importing the HeroSection component displayed at the top of the landing page
 import HeroSection from "@/components/hero";
+
+// Importing custom Button, Card, and CardContent UI components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { featuresData, howItWorksData, statsData, testimonialsData,} from "@/data/landing";
+
+// Importing static content used in the landing page sections
+import {
+  featuresData,
+  howItWorksData,
+  statsData,
+  testimonialsData,
+} from "@/data/landing";
+
+// Importing Next.js Image component for optimized image rendering
 import Image from "next/image";
-import Link from "next/link"
+
+// Importing Link from Next.js for client-side navigation
+import Link from "next/link";
 
 export default function Home() {
-  return <div className="mt-40">
-    <HeroSection/>
+  return (
+    <div className="mt-40">
+      {/* Hero section with a headline and brief intro */}
+      <HeroSection />
 
-    {/* Stats Section */}
-    <section className="py-20 bg-blue-50">
+      {/* Stats Section - displays key platform statistics like number of users, reviews, etc. */}
+      <section className="py-20 bg-blue-50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {statsData.map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="text-4xl font-bold text-blue-600 mb-2">
-                  {stat.value}
+                  {stat.value} {/* e.g. "10K+", "99%" */}
                 </div>
-                <div className="text-gray-600">{stat.label}</div>
+                <div className="text-gray-600">{stat.label}</div> {/* e.g. "Users", "Accuracy" */}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section - highlights main functionalities of the platform */}
       <section id="features" className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">
@@ -35,7 +51,7 @@ export default function Home() {
             {featuresData.map((feature, index) => (
               <Card className="p-6" key={index}>
                 <CardContent className="space-y-4 pt-4">
-                  {feature.icon}
+                  {feature.icon} {/* Icon representing the feature */}
                   <h3 className="text-xl font-semibold">{feature.title}</h3>
                   <p className="text-gray-600">{feature.description}</p>
                 </CardContent>
@@ -45,13 +61,14 @@ export default function Home() {
         </div>
       </section>
 
-       {/* How It Works Section */}
-       <section className="py-20 bg-blue-50">
+      {/* How It Works Section - explains user journey or system workflow */}
+      <section className="py-20 bg-blue-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-16">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {howItWorksData.map((step, index) => (
               <div key={index} className="text-center">
+                {/* Circular icon wrapper */}
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   {step.icon}
                 </div>
@@ -62,7 +79,8 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* Testimonials Section */}
+
+      {/* Testimonials Section - user feedback and reviews */}
       <section id="testimonials" className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-16">
@@ -95,7 +113,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Call-To-Action Section - encourages users to get started */}
       <section className="py-20 bg-blue-600">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
@@ -103,7 +121,7 @@ export default function Home() {
           </h2>
           <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
             Join thousands of users who are already managing their finances
-            smarter with  FINLYTICS AI
+            smarter with FINLYTICS AI
           </p>
           <Link href="/dashboard">
             <Button
@@ -116,8 +134,27 @@ export default function Home() {
         </div>
       </section>
     </div>
-      
-     
-     
-     
+  );
 }
+
+// This Home component builds the public landing page of FINLYTICS AI.
+
+// It includes sections for:
+
+// Hero introduction
+
+// Platform statistics
+
+// Core features of the app
+
+// How the system works
+
+// Testimonials from users
+
+// Final CTA to guide users to sign up
+
+// All section data is driven by structured JSON objects (featuresData, statsData, etc.).
+
+// Uses Card components and Tailwind utility classes for layout and responsiveness.
+
+// Fully mobile-responsive and accessible.

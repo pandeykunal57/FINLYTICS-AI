@@ -1,12 +1,13 @@
-"use client";
+"use client"; // Marks this file as a client-side component (required for hooks like useState)
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import useFetch from "@/hooks/use-fetch";
-import { toast } from "sonner";
+import { useState, useEffect } from "react"; // React hooks
+import { useForm } from "react-hook-form"; // Hook for managing form state
+import { zodResolver } from "@hookform/resolvers/zod"; // Integrates Zod schema validation with react-hook-form
+import { Loader2 } from "lucide-react"; // Loading spinner icon
+import useFetch from "@/hooks/use-fetch"; // Custom hook for API call handling
+import { toast } from "sonner"; // Notification library
 
+// UI components
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -25,11 +26,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { createAccount } from "@/actions/dashboard";
-import { accountSchema } from "@/app/lib/schema";
 
+import { createAccount } from "@/actions/dashboard"; // Function to create an account (API call)
+import { accountSchema } from "@/app/lib/schema"; // Zod schema for form validation
+
+// Functional component to handle account creation through a drawer
 export function CreateAccountDrawer({ children }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // Controls whether the drawer is open
+
+  // React Hook Form setup with default values and Zod validation
   const {
     register,
     handleSubmit,
@@ -47,6 +52,7 @@ export function CreateAccountDrawer({ children }) {
     },
   });
 
+  // Custom hook to handle API interaction
   const {
     loading: createAccountLoading,
     fn: createAccountFn,
@@ -54,18 +60,21 @@ export function CreateAccountDrawer({ children }) {
     data: newAccount,
   } = useFetch(createAccount);
 
+  // Form submission handler
   const onSubmit = async (data) => {
-    await createAccountFn(data);
+    await createAccountFn(data); // Call API to create account
   };
 
+  // Effect to close drawer and reset form if account is created
   useEffect(() => {
     if (newAccount) {
       toast.success("Account created successfully");
-      reset();
-      setOpen(false);
+      reset(); // Reset form fields
+      setOpen(false); // Close drawer
     }
   }, [newAccount, reset]);
 
+  // Effect to show error message if account creation fails
   useEffect(() => {
     if (error) {
       toast.error(error.message || "Failed to create account");
@@ -79,13 +88,13 @@ export function CreateAccountDrawer({ children }) {
         <DrawerHeader>
           <DrawerTitle>Create New Account</DrawerTitle>
         </DrawerHeader>
+
+        {/* Drawer form for account creation */}
         <div className="px-4 pb-4">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Account Name Field */}
             <div className="space-y-2">
-              <label
-                htmlFor="name"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <label htmlFor="name" className="text-sm font-medium">
                 Account Name
               </label>
               <Input
@@ -98,11 +107,9 @@ export function CreateAccountDrawer({ children }) {
               )}
             </div>
 
+            {/* Account Type Select */}
             <div className="space-y-2">
-              <label
-                htmlFor="type"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <label htmlFor="type" className="text-sm font-medium">
                 Account Type
               </label>
               <Select
@@ -122,11 +129,9 @@ export function CreateAccountDrawer({ children }) {
               )}
             </div>
 
+            {/* Initial Balance Input */}
             <div className="space-y-2">
-              <label
-                htmlFor="balance"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <label htmlFor="balance" className="text-sm font-medium">
                 Initial Balance
               </label>
               <Input
@@ -141,12 +146,10 @@ export function CreateAccountDrawer({ children }) {
               )}
             </div>
 
+            {/* Default Account Toggle */}
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="space-y-0.5">
-                <label
-                  htmlFor="isDefault"
-                  className="text-base font-medium cursor-pointer"
-                >
+                <label htmlFor="isDefault" className="text-base font-medium ">
                   Set as Default
                 </label>
                 <p className="text-sm text-muted-foreground">
@@ -160,6 +163,7 @@ export function CreateAccountDrawer({ children }) {
               />
             </div>
 
+            {/* Form Buttons */}
             <div className="flex gap-4 pt-4">
               <DrawerClose asChild>
                 <Button type="button" variant="outline" className="flex-1">
@@ -187,3 +191,16 @@ export function CreateAccountDrawer({ children }) {
     </Drawer>
   );
 }
+ 
+
+// This component displays a drawer modal that allows users to create a new bank account.
+
+// Uses react-hook-form with Zod validation to ensure safe and correct input.
+
+// Custom useFetch hook handles the API call to create an account, showing loading states and toast messages on success/failure.
+
+// Drawer UI includes fields for name, type, balance, and a toggle to mark it as the default account.
+
+// Includes accessibility, error handling, and feedback to the user (via toast and disabled buttons).
+
+// Modular and reusable using headless UI primitives from your design system.

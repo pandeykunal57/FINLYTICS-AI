@@ -1,9 +1,10 @@
 "use server";
 
-import { db } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
+import { db } from "@/lib/prisma"; // Prisma client for DB access
+import { auth } from "@clerk/nextjs/server"; // Authentication helper
+import { revalidatePath } from "next/cache"; // For ISR cache revalidation
 
+// Helper to convert Prisma Decimal objects to numbers for JSON serialization
 const serializeDecimal = (obj) => {
   const serialized = { ...obj };
   if (obj.balance) {
@@ -15,6 +16,7 @@ const serializeDecimal = (obj) => {
   return serialized;
 };
 
+// Fetch account by ID with transactions, authorized by current user
 export async function getAccountWithTransactions(accountId) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -22,7 +24,6 @@ export async function getAccountWithTransactions(accountId) {
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-
   if (!user) throw new Error("User not found");
 
   const account = await db.account.findUnique({
@@ -48,6 +49,7 @@ export async function getAccountWithTransactions(accountId) {
   };
 }
 
+// Bulk delete transactions and update related account balances atomically
 export async function bulkDeleteTransactions(transactionIds) {
   try {
     const { userId } = await auth();
@@ -56,10 +58,9 @@ export async function bulkDeleteTransactions(transactionIds) {
     const user = await db.user.findUnique({
       where: { clerkUserId: userId },
     });
-
     if (!user) throw new Error("User not found");
 
-    // Get transactions to calculate balance changes
+    // Fetch transactions to calculate balance adjustments
     const transactions = await db.transaction.findMany({
       where: {
         id: { in: transactionIds },
@@ -67,7 +68,7 @@ export async function bulkDeleteTransactions(transactionIds) {
       },
     });
 
-    // Group transactions by account to update balances
+    // Calculate balance changes per account
     const accountBalanceChanges = transactions.reduce((acc, transaction) => {
       const change =
         transaction.type === "EXPENSE"
@@ -77,9 +78,8 @@ export async function bulkDeleteTransactions(transactionIds) {
       return acc;
     }, {});
 
-    // Delete transactions and update account balances in a transaction
+    // Run DB transaction to delete and update balances atomically
     await db.$transaction(async (tx) => {
-      // Delete transactions
       await tx.transaction.deleteMany({
         where: {
           id: { in: transactionIds },
@@ -87,7 +87,6 @@ export async function bulkDeleteTransactions(transactionIds) {
         },
       });
 
-      // Update account balances
       for (const [accountId, balanceChange] of Object.entries(
         accountBalanceChanges
       )) {
@@ -102,6 +101,7 @@ export async function bulkDeleteTransactions(transactionIds) {
       }
     });
 
+    // Revalidate Next.js cached paths for fresh data
     revalidatePath("/dashboard");
     revalidatePath("/account/[id]");
 
@@ -111,6 +111,7 @@ export async function bulkDeleteTransactions(transactionIds) {
   }
 }
 
+// Update the default account for the logged-in user
 export async function updateDefaultAccount(accountId) {
   try {
     const { userId } = await auth();
@@ -119,12 +120,11 @@ export async function updateDefaultAccount(accountId) {
     const user = await db.user.findUnique({
       where: { clerkUserId: userId },
     });
-
     if (!user) {
       throw new Error("User not found");
     }
 
-    // First, unset any existing default account
+    // Unset previous default accounts
     await db.account.updateMany({
       where: {
         userId: user.id,
@@ -133,7 +133,7 @@ export async function updateDefaultAccount(accountId) {
       data: { isDefault: false },
     });
 
-    // Then set the new default account
+    // Set new default account
     const account = await db.account.update({
       where: {
         id: accountId,
@@ -143,8 +143,19 @@ export async function updateDefaultAccount(accountId) {
     });
 
     revalidatePath("/dashboard");
-    return { success: true, data: serializeTransaction(account) };
+
+    return { success: true, data: serializeDecimal(account) };
   } catch (error) {
     return { success: false, error: error.message };
   }
 }
+
+/*
+NOTES:
+- All functions require user authentication and verify ownership before DB operations.
+- serializeDecimal helper converts Prisma Decimal types to numbers for JSON compatibility.
+- bulkDeleteTransactions handles safe deletion of multiple transactions and updates balances accordingly in a single DB transaction to maintain data integrity.
+- updateDefaultAccount ensures only one default account per user by resetting existing defaults before setting the new one.
+- revalidatePath triggers Next.js ISR to refresh pages after data changes.
+- Error handling returns success status and messages for frontend feedback.
+*/

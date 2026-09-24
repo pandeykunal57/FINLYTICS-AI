@@ -9,7 +9,7 @@ export const defaultCategories = [
   },
   {
     id: "freelance",
-    name: "Freelance",
+    name: "Family and Gifts",
     type: "INCOME",
     color: "#06b6d4", // cyan-500
     icon: "Laptop",
@@ -23,7 +23,7 @@ export const defaultCategories = [
   },
   {
     id: "business",
-    name: "Business",
+    name: "Dues",
     type: "INCOME",
     color: "#ec4899", // pink-500
     icon: "Building",
@@ -35,6 +35,7 @@ export const defaultCategories = [
     color: "#f59e0b", // amber-500
     icon: "Home",
   },
+  
   {
     id: "other-income",
     name: "Other Income",
@@ -152,6 +153,7 @@ export const defaultCategories = [
     icon: "Receipt",
     subcategories: ["Bank Fees", "Late Fees", "Service Charges"],
   },
+  
   {
     id: "other-expense",
     name: "Other Expenses",
